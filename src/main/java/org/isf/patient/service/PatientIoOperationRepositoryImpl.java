@@ -35,6 +35,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
 import org.isf.patient.model.Patient;
+import org.isf.reductionplan.model.ReductionPlan;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -136,5 +137,6 @@ public class PatientIoOperationRepositoryImpl implements PatientIoOperationRepos
 
 		return entityManager.createQuery(query).getResultList();
 	}
+
 
 }

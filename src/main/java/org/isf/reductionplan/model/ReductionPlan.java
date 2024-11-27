@@ -185,17 +185,38 @@ public class ReductionPlan extends Auditable<String> implements Serializable {
 		otherReduction.setReductionPlan(this);
 	}
 
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
 		if (!(obj instanceof ReductionPlan)) return false;
 		ReductionPlan other = (ReductionPlan) obj;
-		return id == other.id;
+
+		// Si l'ID n'est pas encore défini, ignorez-le dans la comparaison
+		if (this.id == 0 || other.id == 0) {
+			return Objects.equals(description, other.description) &&
+							Double.compare(operationRate, other.operationRate) == 0 &&
+							Double.compare(medicalRate, other.medicalRate) == 0 &&
+							Double.compare(examRate, other.examRate) == 0 &&
+							Double.compare(otherRate, other.otherRate) == 0;
+		}
+
+		// Si les IDs sont définis, comparez-les également
+		return id == other.id &&
+						Objects.equals(description, other.description) &&
+						Double.compare(operationRate, other.operationRate) == 0 &&
+						Double.compare(medicalRate, other.medicalRate) == 0 &&
+						Double.compare(examRate, other.examRate) == 0 &&
+						Double.compare(otherRate, other.otherRate) == 0;
 	}
+
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
 	}
+	@Override
+	public String toString() {
+		return description;
+	}
+
 }

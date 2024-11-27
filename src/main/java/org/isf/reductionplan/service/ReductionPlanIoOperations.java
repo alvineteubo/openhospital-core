@@ -12,6 +12,7 @@ import org.isf.medicals.model.Medical;
 import org.isf.medicals.service.MedicalsIoOperationRepository;
 import org.isf.operation.model.Operation;
 import org.isf.operation.service.OperationIoOperationRepository;
+import org.isf.patient.service.PatientIoOperationRepository;
 import org.isf.pricesothers.model.PricesOthers;
 import org.isf.pricesothers.service.PriceOthersIoOperationRepository;
 import org.isf.reductionplan.model.ExamsReduction;
@@ -46,12 +47,13 @@ public class ReductionPlanIoOperations {
 	private final MedicalsIoOperationRepository medicalsIoOperationRepository;
 	private final OperationIoOperationRepository operationIoOperationRepository;
 	private final PriceOthersIoOperationRepository priceOthersIoOperationRepository;
+	private  final PatientIoOperationRepository patientIoOperationRepository;
 
 	public ReductionPlanIoOperations(ReductionplanIoOperationRepository reductionplanIoOperationRepository, ExamsReductionRepository examsReductionRepository,
 					MedicalsReductionRepository medicalsReductionRepository, OperationsReductionRepository operationsReductionRepository,
 					OthersReductionRepository othersReductionRepository, ExamIoOperationRepository examIoOperationRepository,
 					MedicalsIoOperationRepository medicalsIoOperationRepository, OperationIoOperationRepository operationIoOperationRepository,
-					PriceOthersIoOperationRepository priceOthersIoOperationRepository
+					PriceOthersIoOperationRepository priceOthersIoOperationRepository, PatientIoOperationRepository patientIoOperationRepository
 	) {
 		this.repository = reductionplanIoOperationRepository;
 		this.examsReductionRepository = examsReductionRepository;
@@ -62,6 +64,7 @@ public class ReductionPlanIoOperations {
 		this.medicalsIoOperationRepository = medicalsIoOperationRepository;
 		this.operationIoOperationRepository = operationIoOperationRepository;
 		this.priceOthersIoOperationRepository = priceOthersIoOperationRepository;
+		this.patientIoOperationRepository = patientIoOperationRepository;
 	}
 
 	public ExamsReduction getExamsReduction(ReductionPlan reductionPlan, Exam exam) {
@@ -298,31 +301,6 @@ public class ReductionPlanIoOperations {
 		}
 	}
 
-	//		Optional<ReductionPlan> optionalReductionPlan = repository.findById(rpID);
-	//		if (optionalReductionPlan.isEmpty()) {
-	//			throw new OHServiceException(new OHExceptionMessage("ReductionPlan not found for ID: " + rpID));
-	//		}
-	//
-	//		ReductionPlan reductionPlan = optionalReductionPlan.get();
-	//
-	//
-	//
-	//		examsReductionRepository.deleteByReductionPlan(reductionPlan);
-	//
-	//		for (ExamsReduction examReduction : examReductions) {
-	//			String examCode = examReduction.getExam().getCode();
-	//			Optional<Exam> optionalExam = examIoOperationRepository.findById(examCode);
-	//			if (optionalExam.isEmpty()) {
-	//				throw new OHServiceException(new OHExceptionMessage("Exam not found for code: " + examCode));
-	//			}
-	//			Exam exam = optionalExam.get();
-	//
-	//			examReduction.setReductionPlan(reductionPlan);
-	//			examReduction.setExam(exam);
-	//			examsReductionRepository.save(examReduction);
-	//		}
-	//
-	//		return true;
 
 	/**
 	 * Return the list of {@link ReductionPlan}s in the DB
@@ -371,5 +349,108 @@ public class ReductionPlanIoOperations {
 	public void deleteReductionplan(ReductionPlan reductionplan) throws OHServiceException {
 		repository.delete(reductionplan);
 	}
+
+
+	// Ajout d'un examen pour un plan de réduction
+	public boolean addExamToReductionPlan(int reductionPlanId, String examCode, double reductionRate) {
+		// Charger le plan de réduction
+		ReductionPlan reductionPlan = repository.findById(reductionPlanId).orElse(null);
+		if (reductionPlan == null) {
+			return false; // Si le plan de réduction n'existe pas, retourner false
+		}
+
+		// Charger l'examen
+		Exam exam = examIoOperationRepository.findById(examCode).orElse(null);
+		if (exam == null) {
+			return false; // Si l'examen n'existe pas, retourner false
+		}
+
+		// Créer l'objet ExamsReduction
+		ExamsReduction examsReduction = new ExamsReduction();
+		examsReduction.setReductionPlan(reductionPlan);
+		examsReduction.setExam(exam);
+		examsReduction.setReductionRate(reductionRate);
+
+		// Sauvegarder l'examen
+		examsReductionRepository.save(examsReduction);
+		return true;
+	}
+
+	// Ajout d'une réduction pour un traitement médical
+	public boolean addMedicalToReductionPlan(int reductionPlanId, Integer medicalId, double reductionRate) {
+		// Charger le plan de réduction
+		ReductionPlan reductionPlan = repository.findById(reductionPlanId).orElse(null);
+		if (reductionPlan == null) {
+			return false; // Si le plan de réduction n'existe pas, retourner false
+		}
+
+		// Charger l'objet Medical
+		Medical medical = medicalsIoOperationRepository.findById(medicalId).orElse(null);
+		if (medical == null) {
+			return false; // Si le traitement médical n'existe pas, retourner false
+		}
+
+		// Créer l'objet MedicalsReduction
+		MedicalsReduction medicalsReduction = new MedicalsReduction();
+		medicalsReduction.setReductionPlan(reductionPlan);
+		medicalsReduction.setMedical(medical);
+		medicalsReduction.setReductionRate(reductionRate);
+
+		// Sauvegarder la réduction médicale
+		medicalsReductionRepository.save(medicalsReduction);
+		return true;
+	}
+
+	// Ajout d'une réduction pour une opération
+	public boolean addOperationToReductionPlan(int reductionPlanId, String operationId, double reductionRate) {
+		// Charger le plan de réduction
+		ReductionPlan reductionPlan = repository.findById(reductionPlanId).orElse(null);
+		if (reductionPlan == null) {
+			return false; // Si le plan de réduction n'existe pas, retourner false
+		}
+
+		// Charger l'objet Operation
+		Operation operation = operationIoOperationRepository.findById(operationId).orElse(null);
+		if (operation == null) {
+			return false; // Si l'opération n'existe pas, retourner false
+		}
+
+		// Créer l'objet OperationsReduction
+		OperationsReduction operationsReduction = new OperationsReduction();
+		operationsReduction.setReductionPlan(reductionPlan);
+		operationsReduction.setOperation(operation);
+		operationsReduction.setReductionRate(reductionRate);
+
+		// Sauvegarder la réduction d'opération
+		operationsReductionRepository.save(operationsReduction);
+		return true;
+	}
+
+	// Ajout d'une réduction pour des prix autres
+	public boolean addOtherToReductionPlan(int reductionPlanId, int pricesOtherId, double reductionRate) {
+		// Charger le plan de réduction
+		ReductionPlan reductionPlan = repository.findById(reductionPlanId).orElse(null);
+		if (reductionPlan == null) {
+			return false; // Si le plan de réduction n'existe pas, retourner false
+		}
+
+		// Charger l'objet PricesOthers
+		PricesOthers pricesOthers = priceOthersIoOperationRepository.findById(pricesOtherId).orElse(null);
+		if (pricesOthers == null) {
+			return false; // Si le prix autre n'existe pas, retourner false
+		}
+
+		// Créer l'objet OtherReduction
+		OtherReduction otherReduction = new OtherReduction();
+		otherReduction.setReductionPlan(reductionPlan);
+		otherReduction.setPricesOthers(pricesOthers);
+		otherReduction.setReductionRate(reductionRate);
+
+		// Sauvegarder la réduction autre
+		othersReductionRepository.save(otherReduction);
+		return true;
+	}
+
+
 
 }

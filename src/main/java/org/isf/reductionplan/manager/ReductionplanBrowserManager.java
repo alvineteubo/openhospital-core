@@ -203,6 +203,23 @@ public class ReductionplanBrowserManager {
 		return ioOperations.updateOthersReduction(pricesOther, rpID, reductionRate);
 	}
 
+	public boolean addExamToReductionPlan(int reductionPlanId, String examCode, double reductionRate) {
+		return ioOperations.addExamToReductionPlan(reductionPlanId, examCode, reductionRate);
+	}
+
+	public boolean addMedicalToReductionPlan(int reductionPlanId, Integer medicalId, double reductionRate) {
+		return ioOperations.addMedicalToReductionPlan(reductionPlanId, medicalId, reductionRate);
+	}
+
+	public boolean addOperationToReductionPlan(int reductionPlanId, String operationId, double reductionRate) {
+		return ioOperations.addOperationToReductionPlan(reductionPlanId, operationId, reductionRate);
+	}
+
+	public boolean addOtherToReductionPlan(int reductionPlanId, int pricesOtherId, double reductionRate) {
+		return ioOperations.addOtherToReductionPlan(reductionPlanId, pricesOtherId, reductionRate);
+	}
+
+
 
 }
 
