@@ -578,7 +578,7 @@ class Tests extends OHCoreTestCase {
 //		examIoOperationRepository.saveAndFlush(exam); // Sauvegarde de l'examen dans la base
 //
 //
-//		boolean result = repository.addExamToReductionPlan(reductionPlan.getId(), exam.getCode(), 30.0);
+//		boolean result = examsReductionRepository.addExamToReductionPlan(reductionPlan.getId(), exam.getCode(), 30.0);
 //
 //
 //		assertThat(result).isTrue();
