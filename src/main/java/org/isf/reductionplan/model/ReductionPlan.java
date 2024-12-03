@@ -1,4 +1,3 @@
-
 /*
  * Open Hospital (www.open-hospital.org)
  * Copyright © 2006-2024 Informatici Senza Frontiere (info@informaticisenzafrontiere.org)
@@ -25,14 +24,19 @@ package org.isf.reductionplan.model;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
@@ -81,6 +85,19 @@ public class ReductionPlan extends Auditable<String> implements Serializable {
 
 	@Transient
 	private volatile int hashcode;
+
+	@OneToMany(mappedBy = "reductionPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ExamsReduction> examsReduction = new ArrayList<>();
+
+
+	@OneToMany(mappedBy = "reductionPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<MedicalsReduction> medicalsReduction = new ArrayList<>();
+
+	@OneToMany(mappedBy = "reductionPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<OperationsReduction> operationsReductions = new ArrayList<>();
+
+	@OneToMany(mappedBy = "reductionPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<OtherReduction> otherReductions = new ArrayList<>();
 
 	public ReductionPlan() {
 		super();
@@ -167,25 +184,73 @@ public class ReductionPlan extends Auditable<String> implements Serializable {
 		return description;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!(obj instanceof ReductionPlan reductionplan)) {
-			return false;
-		}
-		return (id == reductionplan.getId());
+	public List<ExamsReduction> getExamsReduction() {
+		return examsReduction;
+	}
+
+
+	public void setExamsReduction(List<ExamsReduction> examsReduction) {
+		this.examsReduction = examsReduction;
+	}
+	public List<MedicalsReduction> getMedicalsReduction() {
+		return medicalsReduction;
+	}
+	public void addExamsReduction(ExamsReduction examsReduction) {
+		this.examsReduction.add(examsReduction);
+		examsReduction.setReductionPlan(this);
+	}
+
+	public void addMedicalsReduction(MedicalsReduction medicalsReduction) {
+		this.medicalsReduction.add(medicalsReduction);
+		medicalsReduction.setReductionPlan(this);
+	}
+
+	public List<OperationsReduction> getOperationsReductions() {
+		return operationsReductions;
+	}
+	public void addOperationsReduction(OperationsReduction operationsReduction) {
+		this.operationsReductions.add(operationsReduction);
+		operationsReduction.setReductionPlan(this);
+	}
+
+	public List<OtherReduction> getOtherReductions() {
+		return otherReductions;
+	}
+
+	public void addOtherReduction(OtherReduction otherReduction) {
+		this.otherReductions.add(otherReduction);
+		otherReduction.setReductionPlan(this);
 	}
 
 	@Override
-	public int hashCode() {
-		if (this.hashcode == 0) {
-			final int m = 23;
-			int c = 133;
-			c = m * c + id;
-			this.hashcode = c;
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof ReductionPlan)) return false;
+		ReductionPlan other = (ReductionPlan) obj;
+
+		// Si l'ID n'est pas encore défini, ignorez-le dans la comparaison
+		if (this.id == 0 || other.id == 0) {
+			return Objects.equals(description, other.description) &&
+							Double.compare(operationRate, other.operationRate) == 0 &&
+							Double.compare(medicalRate, other.medicalRate) == 0 &&
+							Double.compare(examRate, other.examRate) == 0 &&
+							Double.compare(otherRate, other.otherRate) == 0;
 		}
-		return this.hashcode;
+
+		// Si les IDs sont définis, comparez-les également
+		return id == other.id &&
+						Objects.equals(description, other.description) &&
+						Double.compare(operationRate, other.operationRate) == 0 &&
+						Double.compare(medicalRate, other.medicalRate) == 0 &&
+						Double.compare(examRate, other.examRate) == 0 &&
+						Double.compare(otherRate, other.otherRate) == 0;
 	}
+
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+
 }

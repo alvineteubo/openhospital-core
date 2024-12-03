@@ -29,11 +29,45 @@ import java.util.List;
 
 import org.assertj.core.api.Condition;
 import org.isf.OHCoreTestCase;
+import org.isf.exa.TestExam;
+import org.isf.exa.model.Exam;
+import org.isf.exa.service.ExamIoOperationRepository;
+import org.isf.exatype.TestExamType;
+import org.isf.exatype.model.ExamType;
+import org.isf.exatype.service.ExamTypeIoOperationRepository;
+import org.isf.medicals.TestMedical;
+import org.isf.medicals.model.Medical;
+import org.isf.medicals.service.MedicalsIoOperationRepository;
+import org.isf.medtype.TestMedicalType;
+import org.isf.medtype.model.MedicalType;
+import org.isf.medtype.service.MedicalTypeIoOperationRepository;
+import org.isf.operation.TestOperation;
+import org.isf.operation.model.Operation;
+import org.isf.operation.service.OperationIoOperationRepository;
+import org.isf.opetype.TestOperationType;
+import org.isf.opetype.model.OperationType;
+import org.isf.opetype.service.OperationTypeIoOperationRepository;
+import org.isf.pricesothers.TestPricesOthers;
+import org.isf.pricesothers.model.PricesOthers;
+import org.isf.pricesothers.service.PriceOthersIoOperationRepository;
 import org.isf.reductionplan.manager.ReductionplanBrowserManager;
+import org.isf.reductionplan.model.ExamsReduction;
+import org.isf.reductionplan.model.ExamsReductionId;
+import org.isf.reductionplan.model.MedicalsReduction;
+import org.isf.reductionplan.model.MedicalsReductionId;
+import org.isf.reductionplan.model.OperationsReduction;
+import org.isf.reductionplan.model.OperationsReductionId;
+import org.isf.reductionplan.model.OtherReduction;
+import org.isf.reductionplan.model.OtherReductionId;
 import org.isf.reductionplan.model.ReductionPlan;
+import org.isf.reductionplan.service.ExamsReductionRepository;
+import org.isf.reductionplan.service.MedicalsReductionRepository;
+import org.isf.reductionplan.service.OperationsReductionRepository;
+import org.isf.reductionplan.service.OthersReductionRepository;
 import org.isf.reductionplan.service.ReductionPlanIoOperations;
 import org.isf.reductionplan.service.ReductionplanIoOperationRepository;
 import org.isf.utils.exception.OHDataValidationException;
+import org.isf.utils.exception.OHException;
 import org.isf.utils.exception.OHServiceException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,19 +77,78 @@ import org.springframework.beans.factory.annotation.Autowired;
 class Tests extends OHCoreTestCase {
 
 	private static TestsReductionplan testsReductionplan;
+	private static TestsExamReductionPlan testsExamReductionPlan;
+	private static TestExam testExam;
+	private static TestExamType testExamType;
+	private static TestsMedicalReductionPlan testsMedicalReductionPlan;
+	private static TestMedicalType testMedicalType;
+	private static TestMedical testMedical;
+	private static TestOperation testOperation;
+	private static TestsOperationReductionPlan testsOperationReductionPlan;
+	private static TestOperationType testOperationType;
+	private static TestPricesOthers testPricesOthers;
+	private static TestsOtherReductionPlan testsOtherReductionPlan;
 
 	@Autowired
-	ReductionPlanIoOperations ioOperations;
+	ReductionPlanIoOperations reductionPlanIoOperations;
 
 	@Autowired
 	ReductionplanIoOperationRepository reductionplanIoOperationRepository;
 
 	@Autowired
+	ReductionplanBrowserManager reductionplanBrowserManager;
+
+	@Autowired
+	ExamsReductionRepository examsReductionRepository;
+
+	@Autowired
 	ReductionplanBrowserManager manager;
+
+	@Autowired
+	ExamIoOperationRepository examIoOperationRepository;
+
+	@Autowired
+	ExamTypeIoOperationRepository examTypeIoOperationRepository;
+
+	@Autowired
+	MedicalsIoOperationRepository  medicalsIoOperationRepository;
+
+	@Autowired
+	MedicalsReductionRepository medicalsReductionRepository;
+
+	@Autowired
+	MedicalTypeIoOperationRepository medicalTypeIoOperationRepository;
+
+	@Autowired
+	OperationsReductionRepository operationsReductionRepository;
+
+	@Autowired
+	OperationIoOperationRepository operationIoOperationRepository;
+
+	@Autowired
+	OperationTypeIoOperationRepository operationTypeIoOperationRepository;
+
+	@Autowired
+	PriceOthersIoOperationRepository priceOthersIoOperationRepository;
+
+	@Autowired
+	OthersReductionRepository othersReductionRepository;
 
 	@BeforeAll
 	static void setUpClass() {
 		testsReductionplan = new TestsReductionplan();
+		testsExamReductionPlan = new TestsExamReductionPlan();
+		testsMedicalReductionPlan = new TestsMedicalReductionPlan();
+		testExam = new TestExam();
+		testExamType = new TestExamType();
+		testMedical = new TestMedical();
+		testMedicalType = new TestMedicalType();
+		testOperation = new TestOperation();
+		testPricesOthers = new TestPricesOthers();
+		testsOperationReductionPlan = new TestsOperationReductionPlan();
+		testsOtherReductionPlan = new TestsOtherReductionPlan();
+		testOperationType = new TestOperationType();
+
 	}
 
 	@BeforeEach
@@ -86,7 +179,7 @@ class Tests extends OHCoreTestCase {
 		// given:
 		ReductionPlan reductionplan = testsReductionplan.setup(false);
 		reductionplanIoOperationRepository.save(reductionplan);
-		List<ReductionPlan> foundReductionPlan = ioOperations.getReductionplan();
+		List<ReductionPlan> foundReductionPlan = reductionPlanIoOperations.getReductionplan();
 		assertThat(foundReductionPlan).isNotNull();
 		assertThat(foundReductionPlan.size()).isGreaterThan(0);
 		assertThat(foundReductionPlan.size()).isEqualTo(1);
@@ -104,7 +197,7 @@ class Tests extends OHCoreTestCase {
 		List<Integer> ids = List.of(reduction1.getId(), reduction2.getId());
 
 		// WHEN: Call the findById method
-		List<ReductionPlan> result = manager.getReductionplanByIds(ids);
+		List<ReductionPlan> result = reductionplanBrowserManager.getReductionplanByIds(ids);
 
 		// THEN: Verify that the results are correct
 		assertThat(result).isNotNull();
@@ -120,7 +213,7 @@ class Tests extends OHCoreTestCase {
 		reductionplanIoOperationRepository.save(reductionplan);
 
 		// when: Use the manager method to search by description
-		List<ReductionPlan> result = manager.getReductionplan(reductionplan.getDescription());
+		List<ReductionPlan> result = reductionplanBrowserManager.getReductionplan(reductionplan.getDescription());
 
 		// then: Verify that the expected ReductionPlan is in the results
 		assertThat(result).isNotEmpty();
@@ -133,7 +226,7 @@ class Tests extends OHCoreTestCase {
 		ReductionPlan foundReductionPlan = reductionplanIoOperationRepository.findById(id).orElse(null);
 		assertThat(foundReductionPlan).isNotNull();
 		foundReductionPlan.setDescription("Updated Manager Description");
-		ReductionPlan updatedReductionPlan = manager.updateReductionplan(foundReductionPlan);
+		ReductionPlan updatedReductionPlan = reductionplanBrowserManager.updateReductionplan(foundReductionPlan);
 		assertThat(updatedReductionPlan.getDescription()).isEqualTo("Updated Manager Description");
 	}
 
@@ -143,7 +236,7 @@ class Tests extends OHCoreTestCase {
 		ReductionPlan reductionplan = testsReductionplan.setup(true);
 
 		// when:
-		ReductionPlan newReductionPlan = manager.newReductionplan(reductionplan);
+		ReductionPlan newReductionPlan = reductionplanBrowserManager.newReductionplan(reductionplan);
 
 		// then:
 		assertThat(newReductionPlan.getId()).isGreaterThan(0);
@@ -158,7 +251,7 @@ class Tests extends OHCoreTestCase {
 		assertThat(foundReductionPlan).isNotNull();
 
 		// when:
-		manager.deleteReductionplan(foundReductionPlan);
+		reductionplanBrowserManager.deleteReductionplan(foundReductionPlan);
 
 		// then:
 		assertThat(reductionplanIoOperationRepository.existsById(id)).isFalse();
@@ -170,7 +263,7 @@ class Tests extends OHCoreTestCase {
 
 			ReductionPlan reductionplan = testsReductionplan.setup(true);
 			reductionplan.setDescription("");
-			manager.newReductionplan(reductionplan);
+			reductionplanBrowserManager.newReductionplan(reductionplan);
 		}).isInstanceOf(OHDataValidationException.class)
 						.has(new Condition<>(e -> ((OHServiceException) e).getMessages().size() == 1, "Expecting single validation error"));
 	}
@@ -180,7 +273,7 @@ class Tests extends OHCoreTestCase {
 		assertThatThrownBy(() -> {
 			ReductionPlan reductionplan = testsReductionplan.setup(true);
 			reductionplan.setDescription("");
-			manager.newReductionplan(reductionplan);
+			reductionplanBrowserManager.newReductionplan(reductionplan);
 		}).isInstanceOf(OHDataValidationException.class)
 						.has(new Condition<>(e -> ((OHServiceException) e).getMessages().size() == 1, "Expecting single validation error"));
 	}
@@ -240,4 +333,296 @@ class Tests extends OHCoreTestCase {
 		ReductionPlan reductionplan = testsReductionplan.setup(false);
 		testsReductionplan.check(reductionplan);
 	}
+
+
+
+	@Test
+	public void testGetExamsForReductionPlan_ValidPlan() throws OHServiceException {
+
+		ReductionPlan reductionPlan = new ReductionPlan("Test Reduction Plan", 10.0, 20.0, 30.0, 40.0);
+		reductionPlan = reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		ExamType examType = new ExamType("BT", "Blood Test");
+		assertThat(examType.getCode()).isEqualTo("BT");
+		examType = examTypeIoOperationRepository.saveAndFlush(examType);
+
+		Exam exam = new Exam("BT001", "Blood Sugar Test", examType, 10, "Default Result");
+		assertThat(exam.getCode()).isEqualTo("BT001");
+		assertThat(exam.getExamtype().getCode()).isEqualTo("BT");
+		exam = examIoOperationRepository.saveAndFlush(exam);
+
+		ExamsReduction examsReduction = new ExamsReduction(
+						new ExamsReductionId(reductionPlan.getId(), exam.getCode()),
+						reductionPlan,
+						exam,
+						50.0
+		);
+		examsReductionRepository.saveAndFlush(examsReduction);
+
+		List<ExamsReduction> reductions = examsReductionRepository.findByReductionPlan(reductionPlan);
+
+		assertThat(reductions).isNotNull();
+		assertThat(reductions).hasSize(1);
+		assertThat(reductions.get(0).getReductionRate()).isEqualTo(50.0);
+	}
+
+	@Test
+	void testUpdateExamReduction_Success() throws OHServiceException, OHException, OHException {
+		ReductionPlan reductionPlan = new ReductionPlan("Test Reduction Plan", 10.0, 20.0, 30.0, 40.0);
+		reductionPlan = reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		ExamType examType = testExamType.setup(false);
+		examTypeIoOperationRepository.saveAndFlush(examType);
+
+		Exam exam = testExam.setup(examType, 1, false);
+		exam = examIoOperationRepository.saveAndFlush(exam);
+
+		ExamsReduction examsReduction = new ExamsReduction();
+		ExamsReductionId examsReductionId = new ExamsReductionId(reductionPlan.getId(), exam.getCode());
+		examsReduction.setId(examsReductionId);
+		examsReduction.setReductionPlan(reductionPlan);
+		examsReduction.setExam(exam);
+		examsReduction.setReductionRate(50.0);
+
+		reductionPlan.addExamsReduction(examsReduction);
+		reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		double newReductionRate = 30.0;
+		boolean result = manager.updateExamReduction(exam.getCode(), reductionPlan.getId(), newReductionRate);
+
+		assertThat(result).isTrue();
+
+		ReductionPlan updatedReductionPlan = reductionplanIoOperationRepository.findById(reductionPlan.getId()).orElse(null);
+		assertThat(updatedReductionPlan).isNotNull();
+		assertThat(updatedReductionPlan.getExamsReduction()).hasSize(1);
+
+		ExamsReduction updatedExamsReduction = updatedReductionPlan.getExamsReduction().get(0);
+		assertThat(updatedExamsReduction.getReductionRate()).isEqualTo(newReductionRate);
+	}
+
+	@Test
+	void testUpdateMedicalReductions_Success() throws OHServiceException, OHException {
+		ReductionPlan reductionPlan = new ReductionPlan("Test Reduction Plan", 10.0, 20.0, 30.0, 40.0);
+		reductionPlan = reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		MedicalType medicalType = testMedicalType.setup(false);
+		medicalTypeIoOperationRepository.saveAndFlush(medicalType);
+
+		Medical medical = testMedical.setup(medicalType, false);
+		medical = medicalsIoOperationRepository.saveAndFlush(medical);
+
+		MedicalsReduction medicalsReduction = new MedicalsReduction();
+		MedicalsReductionId medicalsReductionId = new MedicalsReductionId(reductionPlan.getId(), medical.getCode());
+		medicalsReduction.setId(medicalsReductionId);
+		medicalsReduction.setReductionPlan(reductionPlan);
+		medicalsReduction.setMedical(medical);
+		medicalsReduction.setReductionRate(30.0);
+
+		reductionPlan.addMedicalsReduction(medicalsReduction);
+		reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		double newReductionRate = 40.0;
+		boolean result = manager.updateMedicalsReduction(medical.getCode(), reductionPlan.getId(), newReductionRate);
+
+		assertThat(result).isTrue();
+
+		ReductionPlan updatedReductionPlan = reductionplanIoOperationRepository.findById(reductionPlan.getId()).orElse(null);
+		assertThat(updatedReductionPlan).isNotNull();
+		assertThat(updatedReductionPlan.getMedicalsReduction()).hasSize(1);
+
+		MedicalsReduction updateMedicalReduction = updatedReductionPlan.getMedicalsReduction().get(0);
+		assertThat(updateMedicalReduction.getReductionRate()).isEqualTo(newReductionRate);
+	}
+
+	@Test
+	public void testGetMedicalsForReductionPlan_ValidPlan() throws OHServiceException, OHException {
+		ReductionPlan reductionPlan = testsReductionplan.setup(false);
+		reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		MedicalType medicalType = new MedicalType("BT", "Blood Test");
+		assertThat(medicalType.getCode()).isEqualTo("BT");
+		medicalTypeIoOperationRepository.saveAndFlush(medicalType);
+		assertThat(medicalType).isNotNull();
+		assertThat(medicalType.getCode()).isEqualTo("BT");
+
+		Medical medical = testMedical.setup(medicalType, true);
+		medical = medicalsIoOperationRepository.save(medical);
+		assertThat(medical.getCode()).isNotNull();
+		assertThat(medical.getCode()).isEqualTo(1);
+
+		MedicalsReduction medicalsReduction = testsMedicalReductionPlan.setupMedicalReduction(
+						new MedicalsReductionId(reductionPlan.getId(), medical.getCode()), medical, reductionPlan, true);
+		MedicalsReduction medicalsReduction1 = medicalsReductionRepository.save(medicalsReduction);
+		assertThat(medicalsReduction1).isNotNull();
+
+		List<MedicalsReduction> reductions = medicalsReductionRepository.findByReductionPlan(reductionPlan);
+		assertThat(reductions).isNotNull();
+		assertThat(reductions).hasSize(1);
+		assertThat(reductions.get(0).getReductionRate()).isEqualTo(30.0);
+
+		double newReductionRate = 20.0;
+		medicalsReduction.setReductionRate(newReductionRate);
+		medicalsReductionRepository.saveAndFlush(medicalsReduction);
+
+		MedicalsReduction updatedReduction = medicalsReductionRepository.findById(medicalsReduction.getId()).orElse(null);
+		assertThat(updatedReduction).isNotNull();
+		assertThat(updatedReduction.getReductionRate()).isEqualTo(newReductionRate);
+
+		medical = medicalsIoOperationRepository.findById(medical.getCode()).orElse(null);
+		assert medical != null;
+		medical.setProdCode("PROD124");
+		medical.setDescription("Updated Description");
+
+		medical = medicalsIoOperationRepository.saveAndFlush(medical);
+
+		Medical updatedMedical = medicalsIoOperationRepository.findById(medical.getCode()).orElse(null);
+		assertThat(updatedMedical).isNotNull();
+		assertThat(updatedMedical.getProdCode()).isEqualTo("PROD124");
+		assertThat(updatedMedical.getDescription()).isEqualTo("Updated Description");
+	}
+
+	@Test
+	public void testGetOperationForReductionPlan_ValidPlan() throws OHServiceException, OHException {
+		ReductionPlan reductionPlan = testsReductionplan.setup(false);
+		reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		OperationType operationType = new OperationType("OP", "Stomach Operation");
+		operationTypeIoOperationRepository.saveAndFlush(operationType);
+
+		Operation operation = testOperation.setup(operationType, true);
+		operation.setCode("ZZ");
+		operation = operationIoOperationRepository.saveAndFlush(operation);
+		assertThat(operation.getCode()).isEqualTo("ZZ");
+
+		OperationsReduction operationsReduction = testsOperationReductionPlan.setupOperationReduction(
+						new OperationsReductionId(reductionPlan.getId(), operation.getCode()), operation, reductionPlan, true);
+		operationsReductionRepository.saveAndFlush(operationsReduction);
+
+		List<OperationsReduction> reductions = operationsReductionRepository.findByReductionPlan(reductionPlan);
+		assertThat(reductions).isNotNull();
+		assertThat(reductions).hasSize(1);
+		assertThat(reductions.get(0).getReductionRate()).isEqualTo(30.0);
+	}
+
+	@Test
+	void testUpdateOperationReductions_Success() throws OHServiceException, OHException {
+		ReductionPlan reductionPlan = new ReductionPlan("Test Reduction Plan", 10.0, 20.0, 30.0, 40.0);
+		reductionPlan = reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		OperationType operationType = testOperationType.setup(false);
+		operationTypeIoOperationRepository.saveAndFlush(operationType);
+
+		Operation operation = testOperation.setup(operationType, false);
+		operation = operationIoOperationRepository.saveAndFlush(operation);
+
+		OperationsReduction operationsReduction = new OperationsReduction();
+		OperationsReductionId operationsReductionId = new OperationsReductionId(reductionPlan.getId(), operation.getCode());
+		operationsReduction.setId(operationsReductionId);
+		operationsReduction.setReductionPlan(reductionPlan);
+		operationsReduction.setOperation(operation);
+		operationsReduction.setReductionRate(30.0);
+
+		reductionPlan.addOperationsReduction(operationsReduction);
+		reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		double newReductionRate = 40.0;
+		boolean result = manager.updateOperationsReduction(operation.getCode(), reductionPlan.getId(), newReductionRate);
+		assertThat(result).isTrue();
+
+		ReductionPlan updatedReductionPlan = reductionplanIoOperationRepository.findById(reductionPlan.getId()).orElse(null);
+		assertThat(updatedReductionPlan).isNotNull();
+		assertThat(updatedReductionPlan.getOperationsReductions()).hasSize(1);
+
+		OperationsReduction updateOperationReduction = updatedReductionPlan.getOperationsReductions().get(0);
+		assertThat(updateOperationReduction.getReductionRate()).isEqualTo(newReductionRate);
+	}
+
+	@Test
+	public void testGetOthersForReductionPlan_ValidPlan() throws OHServiceException, OHException {
+		ReductionPlan reductionPlan = testsReductionplan.setup(false);
+		reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		PricesOthers pricesOthers = testPricesOthers.setup(true);
+		pricesOthers.setCode("zz".toUpperCase()); // Conversion explicite en majuscules
+		pricesOthers = priceOthersIoOperationRepository.saveAndFlush(pricesOthers);
+		assertThat(pricesOthers.getCode()).isEqualTo("ZZ");
+
+		OtherReduction otherReduction = testsOtherReductionPlan.setupOtherReduction(
+						new OtherReductionId(reductionPlan.getId(), pricesOthers.getId()), pricesOthers, reductionPlan, true);
+		othersReductionRepository.saveAndFlush(otherReduction);
+
+		List<OtherReduction> reductions = othersReductionRepository.findByReductionPlan(reductionPlan);
+		assertThat(reductions).isNotNull();
+		assertThat(reductions).hasSize(1);
+		assertThat(reductions.get(0).getReductionRate()).isEqualTo(30.0);
+	}
+
+	@Test
+	void testUpdateOthersReductions_Success() throws OHServiceException, OHException {
+
+		ReductionPlan reductionPlan = new ReductionPlan("Test Reduction Plan", 10.0, 20.0, 30.0, 40.0);
+		reductionPlan = reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		PricesOthers pricesOthers = testPricesOthers.setup(false);
+		pricesOthers = priceOthersIoOperationRepository.saveAndFlush(pricesOthers);
+
+		OtherReduction otherReduction = new OtherReduction();
+		OtherReductionId otherReductionId = new OtherReductionId(reductionPlan.getId(), pricesOthers.getId());
+		otherReduction.setId(otherReductionId);
+		otherReduction.setReductionPlan(reductionPlan);
+		otherReduction.setPricesOthers(pricesOthers);
+		otherReduction.setReductionRate(30.0);
+
+		reductionPlan.addOtherReduction(otherReduction);
+		reductionplanIoOperationRepository.saveAndFlush(reductionPlan);
+
+		double newReductionRate = 40.0;
+		boolean result = manager.updateOthersReduction(pricesOthers.getId(), reductionPlan.getId(), newReductionRate);
+
+		assertThat(result).isTrue();
+
+		ReductionPlan updatedReductionPlan = reductionplanIoOperationRepository.findById(reductionPlan.getId()).orElse(null);
+		assertThat(updatedReductionPlan).isNotNull();
+		assertThat(updatedReductionPlan.getOtherReductions()).hasSize(1);
+
+		OtherReduction updateOtherReduction = updatedReductionPlan.getOtherReductions().get(0);
+		assertThat(updateOtherReduction.getReductionRate()).isEqualTo(newReductionRate);
+	}
+
+	//	@Test
+	//	void testAddExamToReductionPlan() throws OHException {
+	//		ReductionPlan reductionPlan = testsReductionplan.setup(false);
+	//		repository.saveAndFlush(reductionPlan);
+	//
+	//
+	//		ExamType examType = testExamType.setup(true);
+	//		examTypeIoOperationRepository.saveAndFlush(examType);
+	//
+	//
+	//		Exam exam = testExam.setup(examType, 2, true);
+	//		examIoOperationRepository.saveAndFlush(exam); // Sauvegarde de l'examen dans la base
+	//
+	//
+	//		boolean result = examsReductionRepository.addExamToReductionPlan(reductionPlan.getId(), exam.getCode(), 30.0);
+	//
+	//
+	//		assertThat(result).isTrue();
+	//
+	//
+	//		List<ExamsReduction> reductions = examsReductionRepository.findAll();
+	//		assertThat(reductions).hasSize(1);
+	//
+	//
+	//		ExamsReduction savedReduction = reductions.get(0);
+	//		testsExamReductionPlan.checkExamReductionAttributes(
+	//						savedReduction,
+	//						exam.getCode(),
+	//						reductionPlan.getId(),
+	//						30.0
+	//		);
+	//	}
+
 }
+
+
+
