@@ -143,7 +143,6 @@ public class ReductionPlanIoOperations {
 	 * @throws OHServiceException if an error occurs during the update.
 	 */
 	public boolean updateOperationReduction(int reductionPlanId, String operationId, double reductionRate) {
-		// Charger l'objet ReductionPlan
 		ReductionPlan reductionPlan = repository.findById(reductionPlanId).orElse(null);
 		if (reductionPlan == null) {
 			// Si le plan de réduction n'existe pas, retourner false
